@@ -1,0 +1,133 @@
+//标识符,2    if,3    else,4    while,5    do,6    break,7    数字,9    +,10    -,11
+//*,12    /,13    <,14    >,15    =,16    (,17    ),18    ;,19    {,20    },21*//
+//此处为软件工程实验，有修改
+/*
+标识符，2
+保留字:if,3 then,4 else,5 end,6 repeat,7 until,8 read,9 write,10
+数字，12
+特殊符号：+,13 -,14 *,15 /,16 =,17 <,18 ;,19 
+*/ 
+#include<iostream>
+#include<fstream>
+#include<cstring>
+using namespace std;
+char *keyword[8]={"if","then","else","end","repeat","until","read","write"};
+char filename[30];
+char Word[30];//保存单词
+int sym=0; //保存单词类型值 
+int flag=1;//输入字符行号 
+class TINYAnalyser{
+	private:
+		int finaltableint[1000];//单词类型 
+		int finaltableintnum;
+		int i;//下标 
+		int error;//错误标志
+		
+	public:
+		TINYAnalyser(){
+			finaltableintnum=0;
+			i=0;
+			error=0;
+			
+		}
+		void GetToken();
+		void initialize(); 
+		void printWord();	 
+};
+void TINYAnalyser::GetToken(){
+	cout<<"请输入文件路径：";
+	cin>>filename;
+	fstream source(filename,ios::in);
+	if(!source){
+		cout<<"error"<<endl;
+		exit(1);
+	}
+	char *str=new char[5000];
+	source.getline(str,5000,EOF);
+	source.close();
+	while(*str!='\0'){
+		//判断标识符
+		if(*str>='a'&&*str<='z'||*str>='A'&&*str<='Z'){
+			initialize();
+			char *t=Word;
+			while(*str>='a'&&*str<='z'||*str>='A'&&*str<='Z'){
+				*t=*str;
+				t++;
+				str++;
+			}
+			sym=2;
+			*t='\0';
+			t=Word;
+			//判断保留字 
+			for(int j=0;j<8;j++){
+				if(strcmp(t,keyword[j])==0){
+					sym=3+i;
+				    break;
+				}
+			}
+			//输出判断单词并保存单词类型函
+	        cout<<"("<<sym<<","<<t<<")"<<endl;
+	        finaltableint[finaltableintnum]=sym;
+	        finaltableintnum++;
+		}
+		//处理括号注释符{} 
+		else if(*str=='{'){
+			do{
+				str++;
+			}while(*str!='}');
+			str++;
+		}
+		//判断数字
+		else if(*str>='0'&&*str<='9'){
+			initialize();
+			char *t=Word;
+			while(*str>='0'&&*str<='9'){
+				*t=*str;
+				t++;
+				str++;
+			} 
+			sym=12;
+			*t='\0';
+			t=Word;
+			//输出判断单词并保存单词类型函
+	        cout<<"("<<sym<<","<<t<<")"<<endl;
+        	finaltableint[finaltableintnum]=sym;
+        	finaltableintnum++;
+		} 
+		//判断特殊符号
+		else{
+			int check=0;
+			switch(*str){
+				case'+':sym = 13; check = 1; break;
+                case'-':sym = 14; check = 1; break;
+                case'*':sym = 15; check = 1; break;
+                case'/':sym = 16; check = 1; break;
+                case'=':sym = 17; check = 1; break;
+                case'<':sym = 18; check = 1; break;
+                case';':sym = 19; check = 1; break;
+                case' ': break;
+                case'\t':break;
+                case'\n':flag++;break;
+                default:cout<<"第"<<flag<<"行"<<"有单词分次错误，请检查是否输入非法字符！\n"; error=1;
+			}
+			if(check==1){
+				//输出判断单词并保存单词类型函
+	            cout<<"("<<sym<<","<<*str<<")"<<endl;
+	            finaltableint[finaltableintnum]=sym;
+	            finaltableintnum++;
+			}
+			str++;
+		}		
+	}
+}
+//初始化单词数组函数 
+void TINYAnalyser::initialize(){
+	for(int p=0;p<30;p++){
+		Word[p]='\0';
+	}
+}
+int main(){
+	TINYAnalyser S;
+	S.GetToken();
+	return 0;
+}
